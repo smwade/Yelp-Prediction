@@ -15,7 +15,8 @@ For python, a good interactive work environment is Jupyter Notebook.  Most my cl
 2. $ mkdir raw_data (place the raw data from yelp here)
 3. $ mkdir data (this is where the cleaned data will go)
 4. $ jupyter notebook (Starts session in the browser)
-5. Navigate to file you want
+5. Navigate to data_cleaning
+6. open and run data_exploaration_and_cleaning.ipynb (clean small dataset)
 
 ## Content
 - raw_data
