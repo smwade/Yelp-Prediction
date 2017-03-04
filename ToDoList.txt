@@ -1,0 +1,6 @@
+Ben W
+Find the average distance a customer is willing to travel per category (.. per city?)
+
+Luke
+Find the number of competitors (per category) for every business ID given a competitive distance radius
+- throw in a metric (like local population) to handle the diversity of density of businesses
