@@ -10,6 +10,21 @@ All the work I have done so far has been in python.  If you don't have it instal
 
 For python, a good interactive work environment is Jupyter Notebook.  Most my cleaning and exploratory analysis is done using that so your going to want it.  It just runs in the browser and is pretty easy. (if you really hate it you can just export it to a .py file)
 
+## Setting up Mongodb
+After download the raw JSON files you can import to MongoDB real easy.  Run the following:
+
+ $ mongoimport --db yelp --collection businesses yelp_academic_dataset_business.json
+
+ $ mongoimport --db yelp --collection users yelp_academic_dataset_user.json
+
+ $ mongoimport --db yelp --collection reviews yelp_academic_dataset_review.json
+
+ $ mongoimport --db yelp --collection checkins yelp_academic_dataset_checkin.json
+
+ $ mongoimport --db yelp --collection tips yelp_academic_dataset_tip.json
+
+Then you can start the database by running `$mongo` and `use yelp` to switch to the database.
+
 #### Steps
 1. $ pip install -r requirements.txt (Installs required packages)
 2. $ mkdir raw_data (place the raw data from yelp here)
