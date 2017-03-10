@@ -2,6 +2,7 @@ from __future__ import division, print_function
 import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
+import gpxpy.geo
 from datetime import datetime
 from pymongo import MongoClient
 
@@ -53,6 +54,35 @@ def get_business_checkins(biz_id):
     plt.bar(range(len(checkin_time)), checkin_num[sort_idx], align='center')
     plt.title('Daily Checkins')
     plt.show()
+
+def get_competitors_in_region(business_id, r):
+    """r is in miles"""
+    business = db.businesses.find_one({"business_id" : business_id})
+    latitude, longitude = float(business['latitude']), float(business['longitude'])
+    lat = math.radians(latitude)
+    lon = math.radians(longitude)
+
+    radius  = 3959.
+    # Radius of the parallel at given latitude
+    parallel_radius = radius*math.cos(lat)
+
+    lat_min = math.degrees(lat - r/radius)
+    lat_max = math.degrees(lat + r/radius)
+    lon_min = math.degrees(lon - r/parallel_radius)
+    lon_max = math.degrees(lon + r/parallel_radius)
+
+    print lat_min, lat_max, lon_min, lon_max
+
+    pipe = {"latitude": {"$gte": lat_min, "$lt": lat_max},
+            "longitude": {"$gte": lon_min, "$lt": lon_max},
+            "categories" : {"$elemMatch":{"$in" : business["categories"]}},
+            "is_open" : 1}
+
+    close_enough_biznuz = db.businesses.find(pipe)
+
+    print business
+    return [close_biz for close_biz in list(close_enough_biznuz) if
+            (gpxpy.geo.haversine_distance(latitude, longitude, close_biz['latitude'], close_biz['longitude'])/1609.34) < r]
 
 if __name__ == '__main__':
     print(get_business_name('-gefwOTDqW9HWGDvWBPSMQ'))
