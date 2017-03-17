@@ -1,0 +1,35 @@
+.card--outer{
+  background-color: white;
+  display: flex;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  flex-direction: column;
+  margin: 10px 0px 10px 0px;
+}
+.card--1{
+  width: 100%;
+}
+.card--2{
+  width: 50%;
+  margin: 0px 5px; /*Hack to make flex work as I want*/
+}
+.card--3{
+  width: 33%;
+  margin: 0px 5px; /*Hack to make flex work as I want*/
+}
+.card--title{
+  color: #414141;
+  padding: 5px 0px 0px 10px;
+  font-size: 15px;
+  text-overflow: ellipsis;
+  height: 22px;
+  font-weight: bold;
+  border-bottom: 3px solid rgb(172, 172, 172);
+}
+.card--inner{
+  height: inherit;
+  min-height: 100px;
+  padding: 5px 10px;
+  flex-grow: 1;
+  display: flex;
+  align-items: flex-end;
+}

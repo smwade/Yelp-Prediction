@@ -7,3 +7,5 @@ plotly
 sklearn
 jupyter
 gpxpy
+django-webpack-loader
+django

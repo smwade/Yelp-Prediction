@@ -71,8 +71,6 @@ def get_competitors_in_region(business_id, r):
     lon_min = math.degrees(lon - r/parallel_radius)
     lon_max = math.degrees(lon + r/parallel_radius)
 
-    print lat_min, lat_max, lon_min, lon_max
-
     pipe = {"latitude": {"$gte": lat_min, "$lt": lat_max},
             "longitude": {"$gte": lon_min, "$lt": lon_max},
             "categories" : {"$elemMatch":{"$in" : business["categories"]}},
@@ -80,9 +78,17 @@ def get_competitors_in_region(business_id, r):
 
     close_enough_biznuz = db.businesses.find(pipe)
 
-    print business
     return [close_biz for close_biz in list(close_enough_biznuz) if
             (gpxpy.geo.haversine_distance(latitude, longitude, close_biz['latitude'], close_biz['longitude'])/1609.34) < r]
 
+def get_cumulative_stars_dict(biz_id):
+    to_return = []
+    cur_sum = 0
+    for i, review in enumerate(get_business_reviews(biz_id)):
+        cur_sum += review['stars']
+        to_return.append({'date' : review['date'], 'value' : cur_sum/(i+1)})
+    return to_return
+
 if __name__ == '__main__':
-    print(get_business_name('-gefwOTDqW9HWGDvWBPSMQ'))
+    #print(get_business_name('-gefwOTDqW9HWGDvWBPSMQ'))
+    print(get_cumulative_stars_dict("4JNXUYY8wbaaDmk3BPzlWw"))
