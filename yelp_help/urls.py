@@ -16,8 +16,10 @@ Including another URLconf
 from django.conf.urls import url
 from django.contrib import admin
 from views.home import index
+from api import businesses
 
 urlpatterns = [
-    url(r'', index),
+    url(r'^api/business/(?P<business_id>[\w-]+)/competitor-stars/$', businesses.get_competitors_and_stars),
     url(r'^admin/', admin.site.urls),
+    url(r'^$', index),
 ]
