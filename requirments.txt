@@ -1,4 +1,5 @@
 numpy
+pymongo
 pandas
 scipy
 matplotlib
@@ -7,3 +8,5 @@ plotly
 sklearn
 jupyter
 gpxpy
+django-webpack-loader
+django

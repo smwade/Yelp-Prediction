@@ -1,0 +1,13 @@
+@import '../../common/colors.css';
+
+.navBar{
+  position: fixed;
+  top: 0;
+  height: 43px;
+  width: 100%;
+  color: var(--gray-1);
+}
+
+.categories{
+
+}

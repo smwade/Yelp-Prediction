@@ -1,0 +1,34 @@
+body{
+  margin: 0px;
+  padding: 0px;
+  display: flex;
+  background-color: gainsboro;
+  flex-wrap: wrap;
+}
+.header{
+  width: 100%;
+  height: 180px;
+}
+.app{
+  width: 100%;
+  height: 90vh;
+  display: flex;
+}
+.map{
+  width: 50%;
+}
+.info{
+  width: 50%;
+  padding: 0px 10px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: scroll;
+}
+.cards-container{
+  display: flex;
+  flex-direction: row;
+  margin: 10px 0px;
+}
+.info::-webkit-scrollbar {
+      display: none;
+}
