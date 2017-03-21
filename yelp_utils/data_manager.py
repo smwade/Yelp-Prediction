@@ -6,7 +6,7 @@ import gpxpy.geo
 from datetime import datetime
 from pymongo import MongoClient
 
-def radom_review(n=1):
+def random_review(n=1):
     """ Return n random reviews. """
     client = MongoClient()
     db = client.yelp
