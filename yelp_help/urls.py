@@ -20,6 +20,8 @@ from api import businesses
 
 urlpatterns = [
     url(r'^api/business/(?P<business_id>[\w-]+)/competitor-stars/$', businesses.get_competitors_and_stars),
+    url(r'^api/business/(?P<business_id>[\w-]+)/get-competitive-radius/$', businesses.get_competitors_radius_distance),
+    url(r'^api/business/(?P<business_id>[\w-]+)/percent-above-average/$', businesses.get_ratings_above_average),
     url(r'^admin/', admin.site.urls),
     url(r'^$', index),
 ]

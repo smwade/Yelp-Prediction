@@ -63,11 +63,31 @@ def get_business_competitive_region(business_id):
 
 def get_cumulative_stars_dict(biz_id):
     to_return = []
-    cur_sum = 0
+    cur_sum = 0.
     for i, review in enumerate(_helper_get_business_reviews(biz_id)):
         cur_sum += review['stars']
         to_return.append({'date' : review['date'], 'value' : cur_sum/(i+1)})
     return to_return
+
+def get_competitors_radius_distance(request, business_id):
+  biz = db.businesses.find_one({'business_id': business_id})
+  radius = db.distance.find_one( {'city' : biz['city']} )["radius"]
+  return HttpResponse(json.dumps(radius), content_type="application/json")
+
+def get_ratings_above_average(request, business_id):
+    reviews_list = _helper_get_business_reviews(business_id)
+    review_counts = []
+    average_stars = []
+    review_stars = []
+    for review in reviews_list:
+        user = db.users.find_one({'user_id':review['user_id']})
+        review_counts.append(user['review_count'])
+        average_stars.append(user['average_stars'])
+        review_stars.append(review['stars'])
+
+    better_than_average_review = [i < j for i,j in zip(average_stars, review_stars)]
+    above_feature = sum(better_than_average_review) / len(better_than_average_review)
+    return HttpResponse(json.dumps(above_feature), content_type="application/json")
 
 def get_competitors_and_stars(request, business_id):
     biz, competitors, radius = get_business_competitive_region(business_id)

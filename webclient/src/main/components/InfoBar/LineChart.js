@@ -115,14 +115,18 @@ function drawLineChart( elementId, data2d) {
     .attr( 'transform', 'translate(' + margin.right + ',' + 0 + ')' )
     .call( yAxisTicks );
 
+  var last_index = 0;
+
   var start_datas = splits.map(function(index) {
-            var to_return = startData.slice(0,index);
-            startData.splice(0, index);
+            var to_return = startData.slice(last_index,index);
+            last_index = index;
             return to_return;
           });
 
+  console.log(start_datas.length);
+
   for(var i = 0; i < start_datas.length; i++){
-      console.log(startData);
+      console.log(start_datas[i]);
       // Add the line path.
       svg.append( 'path' )
           .datum( start_datas[i] )
@@ -141,7 +145,7 @@ function drawLineChart( elementId, data2d) {
 
       // Add the area path.
       svg.append( 'path' )
-          .datum( startData )
+          .datum( start_datas[i] )
           .attr( 'class', 'lineChart--area' )
           .attr( 'd', area )
           .transition()
