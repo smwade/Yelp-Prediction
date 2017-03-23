@@ -1,0 +1,15 @@
+Motivation: if the only metric for good business is less competition, prospective business owners with end up in the Sahara. An additional metric for good business is synergy: the oft unseen benefits to your business from nearby businesses (an ice cream shop next to a restaurant).
+
+
+Methods of Measuring Synergy:
+
+
+1) BoW - words in other clusters (from reviews) not frequently occurring in your own (assuming that business is doing well)
+
+2) Density of businesses (plaza) of different industries
+    caveat: people go to clusters of restaurants to pick one
+    
+3) Business relationships - for prospective businesses
+    % composition of industries in 0.5 mile radius of a similar business
+    
+  
