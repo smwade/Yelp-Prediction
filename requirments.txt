@@ -1,4 +1,10 @@
 numpy
+sumy
+textblob
+gensim
+pyLDAvis
+nltk
+us
 pymongo
 pandas
 scipy

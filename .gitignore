@@ -4,3 +4,4 @@ raw_data
 node_modules
 dist
 venv
+webclient/webpack-stats.json

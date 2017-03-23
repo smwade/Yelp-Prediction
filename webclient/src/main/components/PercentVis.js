@@ -8,10 +8,12 @@ export default class Card extends React.Component {
   render() {
     const {
       percent,
-      big
+      percentSign,
+      big,
+      scale
     } = this.props;
     var divStyle = {
-      color: TRAFFIC_PASTELS[parseInt(3 - percent/33)]
+      color: (percent > 0) ? TRAFFIC_PASTELS[Math.round(3 - (percent)/scale)] : TRAFFIC_PASTELS[2]
     };
     var percent_classes = classNames({
       'percent--container' : true,
@@ -20,7 +22,7 @@ export default class Card extends React.Component {
     return (
       <div className={percent_classes}>
         <div className='percent--text' style={divStyle}>
-          {percent}%
+          {percent} {(percentSign) ? '%' : ''}
         </div>
       </div>
     );

@@ -3,6 +3,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import seaborn as sns
 import gpxpy.geo
+from collections import defaultdict
 from datetime import datetime
 from pymongo import MongoClient
 
@@ -105,6 +106,44 @@ def get_cumulative_stars_dict(biz_id):
         cur_sum += review['stars']
         to_return.append({'date' : review['date'], 'value' : cur_sum/(i+1)})
     return to_return
+
+def get_all_reviews_by_user_for_city(city):
+    """A function which queries for all the reviews associated to all the buisnesses in a city
+    returns a dict (biz_id : review_locations)"""
+    client = MongoClient()
+    db = client.yelp
+    bizes = list(db.businesses.find({"city": city}, { "business_id": 1, "latitude": 1, "longitude": 1, "categories": 1}))
+    user_reviews = defaultdict(list)
+    for biz in bizes:
+        biz_id = biz['business_id']
+        rel_review = db.reviews.find({"business_id": biz_id})
+        for review in list(rel_review):
+            user_reviews[review['user_id']].append((biz["latitude"], biz["longitude"]))
+    return user_reviews
+
+#Manipulating Latitude and Longitude
+def get_average_lat_and_long(set_lat_by_long):
+    """We get some wierd outliers from the 'set_lat_by_long' we'll need to take care of these some how
+    returns: the average latitude and longitude
+    NOTE: this is simply the average of the latitude and longitude values (not based on geodicics)"""
+    set_lat_by_long = np.asarray(set_lat_by_long).copy()
+    return np.average(set_lat_by_long, axis=0)
+
+def get_max_distacne_from_mid(set_lat_by_long):
+    """Because of the outliers (these are caused by a missing sign) get_average_lat_and_long returns a point
+    that is very far from the actual center"""
+    set_lat_by_long = np.asarray(set_lat_by_long)
+    mid = get_average_lat_and_long(set_lat_by_long)
+    return np.max([gpxpy.geo.haversine_distance(mid[0], mid[1], lat, lon)/1609.34 for lat, lon in set_lat_by_long])
+
+def get_radius_from_review_centers_dict(review_centers_dict, tol=1):
+    review_center_radi = []
+    review_center_weights = []
+    for val in review_centers_dict.values():
+        dis_from_mid = get_max_distacne_from_mid(val)
+        review_center_radi.append(dis_from_mid)
+        review_center_weights.append(len(val))
+    return np.dot(np.array(review_center_weights).T, np.array(review_center_radi))/np.sum(review_center_weights)
 
 if __name__ == '__main__':
     #print(get_business_name('-gefwOTDqW9HWGDvWBPSMQ'))

@@ -10,15 +10,28 @@ import L from 'leaflet';
 import axios from 'axios';
 import {sprintf} from 'sprintf-js';
 import {COLORS} from "../common/constants.js";
+import Header from './components/Header/Header';
+import {Provider} from 'react-redux';
+import {createStore, combineReducers} from 'redux';
+import allReducers from './reducers';
 
 require('./css/core.css');
 require('./css/barGraph.css');
 require('./css/leaflet.css');
 require('./css/line_chart.css');
+require('./css/react-select.css');
 
 //import {InventoryItem} from './components/InventoryItem';
 //
 //console.log(Navbar);
+//
+const store = createStore(combineReducers(allReducers));
+
+ReactDOM.render(
+  <Provider store={store}>
+    <Header />
+  </Provider>, document.getElementById('header')
+);
 
 var map = document.createElement('div');
 map.id = 'map';
@@ -41,49 +54,44 @@ function getComperitiveRadius(biz_id) {
   return axios.get(sprintf('/api/business/%s/get-competitive-radius/', biz_id));
 }
 
-var barChart = [
-  {
-    letter: 1,
-    frequency: 100
-  },
-  {
-    letter: 2,
-    frequency: 300
-  },
-  {
-    letter: 3,
-    frequency: 500
-  },
-  {
-    letter: 4,
-    frequency: 1000
-  },
-  {
-    letter: 5,
-    frequency: 900
-  }
-];
+function getPercentAboveAverage(biz_id) {
+  return axios.get(sprintf('/api/business/%s/percent-above-average/', biz_id));
+}
+
+function getStarDistrobution(biz_id) {
+  return axios.get(sprintf('/api/business/%s/star-distrobution/', biz_id));
+}
 
 var current_biz = 'LTlCaCGZE14GuaUXUGbamg';
 
-axios.all([getCompetitorsAndStars(current_biz), getComperitiveRadius(current_biz)])
-  .then(axios.spread(function (competitors_star_info, comperitiveRadiusInMiles) {
+axios.all([getCompetitorsAndStars(current_biz), getComperitiveRadius(current_biz), getStarDistrobution(current_biz)])
+  .then(axios.spread(function (competitors_star_info, comperitiveRadiusInMiles, barChart) {
     var lineChart = [];
     var latitude_longitude_pairs = [];
     var getComperitiveInMeters = 1609.34 * comperitiveRadiusInMiles.data;
+    var averageStars = 0;
+    var numReviews = 0;
+    for (var i = 0; i < barChart.data.length; i++){
+      let datum = barChart.data[i];
+      numReviews += datum["frequency"];
+      averageStars += datum["frequency"] * datum["letter"];
+    }
+    averageStars = averageStars/numReviews;
     for (var key in competitors_star_info.data){
       console.log(key);
       console.log(competitors_star_info.data[key]);
       lineChart.push(competitors_star_info.data[key]["stars"]);
       latitude_longitude_pairs.push([competitors_star_info.data[key]["latitude"], competitors_star_info.data[key]["longitude"]]);
     }
+
+    var percentAboveAverage;
     let cards = (
       <div>
         <Card title="Average Rating Over Time" id="linechart"></Card>
         <Card title="Rating Distrobution" id="bargraph"></Card>
         <div className="cards-container">
-          <Card title="Percent of Reviews Above Average" id="percentUp" numOnLine="2"><PercentVis big="true" percent="20.0"></PercentVis></Card>
-          <Card title="Rating Distrobution" id="skill" numOnLine="2"></Card>
+          <Card title="Percent of Reviews Above Average" id="percentUp" numOnLine="2"></Card>
+          <Card title="Average Rating" id="averageRating" numOnLine="2"></Card>
         </div>
         <div className="cards-container">
           <Card title="Rating Distrobution" id="percentDown" numOnLine="3"></Card>
@@ -92,6 +100,15 @@ axios.all([getCompetitorsAndStars(current_biz), getComperitiveRadius(current_biz
         </div>
       </div>
     );
+
+
+    getPercentAboveAverage(current_biz).then(function(aboveAverage){
+      percentAboveAverage = (aboveAverage.data*100).toFixed(1);
+      averageStars = averageStars.toFixed(1);
+      ReactDOM.render(<PercentVis big="true" percent={percentAboveAverage} percentSign={true} scale={33}></PercentVis>, document.getElementById("percentUp"));
+      ReactDOM.render(<PercentVis big="true" percent={averageStars} scale={5/3}></PercentVis>, document.getElementById("averageRating"));
+      console.log(percentAboveAverage);
+    });
 
 
     ReactDOM.render(cards, document.getElementById("info"));
@@ -109,7 +126,7 @@ axios.all([getCompetitorsAndStars(current_biz), getComperitiveRadius(current_biz
 
       drawLineChart('linechart', lineChart);
 
-      drawBarGraph('bargraph', barChart);
+      drawBarGraph('bargraph', barChart.data);
 
       L.tileLayer('http://{s}.tile.thunderforest.com/landscape/{z}/{x}/{y}.png?apikey={apikey}', {
           maxZoom: 15,

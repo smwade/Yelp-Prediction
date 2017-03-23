@@ -3,6 +3,7 @@ import math
 import seaborn as sns
 import gpxpy.geo
 from datetime import datetime
+from collections import Counter
 from pymongo import MongoClient
 
 from django.http import HttpResponse
@@ -68,6 +69,21 @@ def get_cumulative_stars_dict(biz_id):
         cur_sum += review['stars']
         to_return.append({'date' : review['date'], 'value' : cur_sum/(i+1)})
     return to_return
+
+def get_distrobution(request, business_id):
+  reviews_list = _helper_get_business_reviews(business_id)
+  review_stars = []
+  for review in reviews_list:
+      review_stars.append(review['stars'])
+
+  rating_groups = Counter(review_stars)
+  to_return = []
+  for key in range(1, 6):
+    val = rating_groups[key] if key in rating_groups.keys() else 0
+    to_return.append({"letter" : key, "frequency" : val})
+
+  return HttpResponse(json.dumps(to_return), content_type="application/json")
+
 
 def get_competitors_radius_distance(request, business_id):
   biz = db.businesses.find_one({'business_id': business_id})

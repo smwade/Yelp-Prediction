@@ -14,7 +14,6 @@ function drawLineChart( elementId, data2d) {
   var lengths = data2d.map(len);
   var splits = [];
   lengths.reduce(function(a,b,i) { return splits[i] = a+b; },0);
-  console.log(splits);
 
   var data = [].concat.apply([], data2d);
 
@@ -27,11 +26,8 @@ function drawLineChart( elementId, data2d) {
     return datum;
   } );
 
-  console.log(data);
 
   // TODO code duplication check how you can avoid that
-  console.log(document.getElementById( elementId ));
-  console.log(elementId);
   var containerEl = document.getElementById( elementId );
 
   var width       = containerEl.clientWidth,
@@ -48,7 +44,6 @@ function drawLineChart( elementId, data2d) {
 
       container   = d3.select( containerEl ),
       hor_shift = (margin.right+margin.left);
-      console.log(container);
       var svg =       container.append("svg")
                               .attr( 'width', width-hor_shift)
                               .attr( 'height', height + margin.top ),
@@ -87,9 +82,6 @@ function drawLineChart( elementId, data2d) {
 
       circleContainer;
 
-  console.log(containerEl);
-  console.log(width);
-
   var dates = data.map( function( datum ) {
     return datum.date;
   } );
@@ -123,10 +115,7 @@ function drawLineChart( elementId, data2d) {
             return to_return;
           });
 
-  console.log(start_datas.length);
-
   for(var i = 0; i < start_datas.length; i++){
-      console.log(start_datas[i]);
       // Add the line path.
       svg.append( 'path' )
           .datum( start_datas[i] )

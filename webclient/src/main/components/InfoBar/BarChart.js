@@ -63,11 +63,8 @@ function drawBarGraph( elementId, data ) {
       slices.push(data.slice(i-1, data.length));
     }
     slices.push(data);
-    console.log(slices);
     slices.forEach(function(slice, index){
-      console.log(slice, index);
       setTimeout(function(){
-        console.log(slice);
         draw(slice);
       }, index * DELAY);
     });
