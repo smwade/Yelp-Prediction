@@ -145,6 +145,33 @@ def get_radius_from_review_centers_dict(review_centers_dict, tol=1):
         review_center_weights.append(len(val))
     return np.dot(np.array(review_center_weights).T, np.array(review_center_radi))/np.sum(review_center_weights)
 
+# Some machine learning
+def get_clusters(data, n_clusters=2):
+    from sklearn.cluster import KMeans
+    kmeans = KMeans(n_clusters=2).fit(data)
+    centers = kmeans.cluster_centers_
+    to_return = [[] for i in range(len(centers))]
+    for x in data:
+        dist = np.linalg.norm(centers - x, 1, axis=1)
+        index = np.argmin(dist)
+        to_return[index].append(x)
+    #Below we make the assumption that the most points are found in a given city at least!
+    return sorted([np.vstack(i) for i in to_return], key=lambda x: len(x))[::-1]
+
+def clean_reviewer_average_radius_with_get_clusters(reviews):
+    good_points = {}
+    for i, dict_pair in enumerate(reviews.iteritems()):
+        key, val = dict_pair
+        if len(val) > 1:
+            dis_from_mid = get_max_distacne_from_mid(val)
+            k = 2
+            while dis_from_mid > 100: #cities are never bigger than 100 miles in diameter
+                val = get_clusters(val, n_clusters=k)[0] #select the data with the most points
+                k += 1
+                dis_from_mid = get_max_distacne_from_mid(val)
+            good_points[key] = val
+    return good_points
+
 if __name__ == '__main__':
     #print(get_business_name('-gefwOTDqW9HWGDvWBPSMQ'))
     print(get_cumulative_stars_dict("4JNXUYY8wbaaDmk3BPzlWw"))

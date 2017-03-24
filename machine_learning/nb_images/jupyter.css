@@ -1,0 +1,93 @@
+<link href='http://fonts.googleapis.com/css?family=Fenix' rel='stylesheet' type='text/css'>
+<link href="https://fonts.googleapis.com/css?family=Montserrat:300,400,500|Open+Sans" rel="stylesheet">
+<link href='http://fonts.googleapis.com/css?family=Source+Code+Pro:300,400' rel='stylesheet' type='text/css'>
+<link href="https://fonts.googleapis.com/css?family=Raleway:200,300,400" rel="stylesheet" type='text/ccs'>
+<style>
+    .sub-title {
+      font-weight: bold;
+      text-align: left;
+      color: #d65b4f;
+    }
+    @font-face {
+        font-family: "Computer Modern";
+        src: url('http://mirrors.ctan.org/fonts/cm-unicode/fonts/otf/cmunss.otf');
+    }
+    h1 {
+        font-family: 'Montserrat', sans-serif;
+  font-weight:300;
+    }
+    h1.main_header {
+        font-family: 'Montserrat', sans-serif;
+  font-size: 45px !important;
+  font-weight:300 !important;
+  color: #2874A6 !important;
+    }
+    h2 {
+        font-family: 'Montserrat', sans-serif;
+    }
+    h2.section_header {
+        font-family: 'Montserrat', sans-serif;
+  font-size: 25px !important;
+  font-weight:400 !important;
+  color: #148F77 !important;
+    }
+
+    h3{
+  font-family: 'Montserrat', sans-serif;
+        margin-top:12px;
+        margin-bottom: 3px;
+       }
+    h4{
+  font-family: 'Montserrat', sans-serif;
+    }
+    h5 {
+        font-family: 'Montserrat', sans-serif;
+    }
+    div.text_cell_render{
+        font-family: 'Open Sans', sans-serif;
+  line-height: 24px;
+    }
+    .CodeMirror{
+            font-family: "Source Code Pro";
+      font-size: 95%;
+    }
+
+
+
+
+    .text_cell_render h1 {
+        font-weight: 200;
+        font-size: 50pt;
+    line-height: 100%;
+        color:#454851;
+        margin-top: 0.5em;
+        display: block;
+  }
+  .text_cell_render h2 {
+        font-weight: 400;
+    color:#252839;
+        display: block;
+    }
+  .text_cell_render h3 {
+        font-weight: 300;
+        display: block;
+    }
+    .text_cell_render h4 {
+        font-weight: 300;
+  color:#CD2305;
+        display: block;
+    }
+    .text_cell_render h5 {
+        font-weight: 300;
+        font-size: 16pt;
+        color: #CD2305;
+        font-style: italic;
+        margin-bottom: .5em;
+        margin-top: 0.5em;
+        display: block;
+    }
+
+    .warning{
+        color: rgb( 240, 20, 20 )
+        }
+</style>
