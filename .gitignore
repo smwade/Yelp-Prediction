@@ -1,4 +1,5 @@
 .ipynb_checkpoints
+*.p
 data
 raw_data
 node_modules
