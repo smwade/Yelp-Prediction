@@ -8,3 +8,12 @@ export const patchCurrentStateSelection = createAction(PATCH_CURRENT_STATE_SELEC
 
 export const PATCH_CURRENT_CITY_SELECTION = 'PATCH_CURRENT_CITY_SELECTION';
 export const patchCurrentCitySelection = createAction(PATCH_CURRENT_CITY_SELECTION);
+
+export const PATCH_ALL_CITY_OPTIONS = 'PATCH_ALL_CITY_OPTIONS';
+export const patchCurrentCityOptions = createAction(PATCH_ALL_CITY_OPTIONS);
+
+export const PATCH_COMP_DISTANCE = 'PATCH_COMP_DISTANCE';
+export const patchCompDistance = createAction(PATCH_COMP_DISTANCE);
+
+export const PATCH_BUSINESSES = 'PATCH_BUSINESSES';
+export const patchBuisnesses = createAction(PATCH_BUSINESSES);

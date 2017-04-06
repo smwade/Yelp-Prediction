@@ -1,5 +1,6 @@
 import * as d3 from "d3";
 import {COLORS} from "../../../common/constants.js";
+import {sprintf} from 'sprintf-js';
 
 
 //var COLORS = ["#7FCAFF", "#7F97FF", "#A77FFF", "#E77FFF", "#FF7FB0", "#FF9C7E", "#FFBD7E", "#FFD77E", "#FFF17E", "#F3FF7E", "#CAF562", "#62F5C8"];
@@ -7,24 +8,22 @@ import {COLORS} from "../../../common/constants.js";
 var DURATION = 1500;
 var DELAY    = 500;
 
-function drawLineChart( elementId, data2d) {
-  function len(x){
-    return x.length;
-  }
-  var lengths = data2d.map(len);
-  var splits = [];
-  lengths.reduce(function(a,b,i) { return splits[i] = a+b; },0);
-
-  var data = [].concat.apply([], data2d);
-
+function drawLineChart( elementId, dataDict) {
   // parse helper functions on top
   var parse = d3.timeParse( '%Y-%m-%d' );
   // data manipulation first
-  data = data.map( function( datum ) {
-    datum.date = parse( datum.date );
+  var data = [];
 
-    return datum;
-  } );
+  for (var key in dataDict){
+    dataDict[key] = dataDict[key]["stars"].map( function( datum ) {
+      datum.date = parse( datum.date );
+
+      return datum;
+    } );
+    for (var k=0; k < dataDict[key].length; k++){
+      data.push(dataDict[key][k]); //hack for finding optima
+    }
+  }
 
 
   // TODO code duplication check how you can avoid that
@@ -73,13 +72,6 @@ function drawLineChart( elementId, data2d) {
                 .x( function( d ) { return x( d.date ) + detailWidth / 2; } )
                 .y( function( d ) { return y( d.value ); } ),
 
-      startData = data.map( function( datum ) {
-                    return {
-                      date  : datum.date,
-                      value : 0
-                    };
-                  } ),
-
       circleContainer;
 
   var dates = data.map( function( datum ) {
@@ -109,37 +101,29 @@ function drawLineChart( elementId, data2d) {
 
   var last_index = 0;
 
-  var start_datas = splits.map(function(index) {
-            var to_return = startData.slice(last_index,index);
-            last_index = index;
-            return to_return;
-          });
+  var start_datas = {};
 
-  for(var i = 0; i < start_datas.length; i++){
+  for (var key in dataDict){
+    start_datas[key] = dataDict[key].map( function( datum ) {return {date  : datum.date, value : 0 };});
+  }
+
+  var i = 0;
+  for(var key in dataDict){
       // Add the line path.
-      svg.append( 'path' )
-          .datum( start_datas[i] )
-          .attr( 'stroke', COLORS[i])
-          .attr( 'stroke-width', 3)
-          .attr( 'fill', 'None')
-          .attr( 'd', line )
-          .transition()
-          .duration( DURATION )
-          .delay( DURATION / 2 )
-          .attrTween( 'd', tween( data2d[i], line ) );
-          //.each( 'end', function() {
-          //  drawCircles( data );
-          //} );
-
-
-      // Add the area path.
-      svg.append( 'path' )
-          .datum( start_datas[i] )
-          .attr( 'class', 'lineChart--area' )
-          .attr( 'd', area )
-          .transition()
-          .duration( DURATION )
-          .attrTween( 'd', tween( data2d[i], line ) );
+      if (dataDict[key].length > 0) {
+        svg.append( 'path' )
+            .datum( start_datas[key] )
+            .attr( 'stroke', COLORS[i])
+            .attr( 'stroke-width', 3)
+            .attr( 'fill', 'None')
+            .attr( 'id', 'line_' + key)
+            .attr( 'd', line )
+            .transition()
+            .duration( DURATION )
+            .delay( DURATION / 2 )
+            .attrTween( 'd', tween( dataDict[key], line ) );
+      }
+      i++;
   };
 
   /*svg.append("linearGradient")
@@ -168,6 +152,89 @@ function drawLineChart( elementId, data2d) {
       };
     };
   }
+
+  function twane( callback ) {
+    var i = d3.interpolateArray( a, b );
+    return function(t) {
+      return t;
+    };
+
+  };
+
+  function animateOff(){
+      var all_paths = svg.selectAll("path");
+      all_paths.transition()
+               .duration( DURATION/3 )
+               .style('opacity', 0)
+               .remove();
+  };
+
+  function reDrawLines(dataDict){
+      var parse = d3.timeParse( '%Y-%m-%d' );
+      start_datas = {};
+
+      for (var key in dataDict){
+        dataDict[key] = dataDict[key]["stars"].map( function( datum ) {
+          datum.date = parse( datum.date );
+
+          return datum;
+        } );
+      }
+
+      for (var key in dataDict){
+        start_datas[key] = dataDict[key].map( function( datum ) {return {date  : datum.date, value : 0 };});
+      }
+
+      // add the line path.
+      var i = 0;
+      for(var key in dataDict){
+          // Add the line path.
+          if (dataDict[key].length > 0) {
+            svg.append( 'path' )
+                .datum( start_datas[key] )
+                .attr( 'stroke', COLORS[i])
+                .attr( 'stroke-width', 3)
+                .attr( 'fill', 'None')
+                .attr( 'id', 'line_' + key)
+                .attr( 'd', line )
+                .transition()
+                .duration( DURATION )
+                .delay( DURATION / 2 )
+                .attrTween( 'd', tween( dataDict[key], line ) );
+          }
+          i++;
+      };
+      // add the area path.
+      /*svg.append( 'path' )
+          .datum( start_datas[i] )
+          .attr( 'class', 'linechart--area' )
+          .attr( 'd', area )
+          .transition()
+          .duration( duration )
+          .attrtween( 'd', tween( data2d[i], line ) );*/
+  }
+
+  function fadeAllButOne(key){
+    var all_paths = svg.selectAll(sprintf("path:not([id='line_%s'])", key));
+    all_paths.transition()
+             .duration( DURATION/3 )
+             .style('opacity', 0.3)
+             .style('stroke-width', 2);
+    var the_one = svg.selectAll(sprintf("path[id='line_%s']", key));
+    the_one.transition()
+           .style('stroke-width', 4);
+  }
+
+  function unfadeAll(){
+    console.log("HERE2");
+    var all_paths = svg.selectAll("path");
+    all_paths.transition()
+             .duration( 0 )
+             .style('opacity', 1)
+             .style('stroke-width', 3);
+  }
+
+  return {animateOff: animateOff, reDrawLines: reDrawLines, fadeAllButOne: fadeAllButOne, unfadeAll: unfadeAll};
 }
 
 export default drawLineChart;

@@ -4,6 +4,12 @@ import Select from 'react-select';
 import axios from 'axios';
 import {connect} from 'react-redux';
 import {sprintf} from 'sprintf-js';
+import Slider, { Handle } from 'rc-slider';
+import Tooltip from 'rc-tooltip';
+import {getCompetitorsByRadius} from '../../../common/api';
+
+require('../../css/rc-slider/index.css');
+require('../../css/rc-tooltip/bootstrap.css');
 
 var all_states;
 var all_cities;
@@ -20,9 +26,16 @@ class Header extends React.Component{
       disabled: false,
       selectedState: null,
     };
-    this.getAllCities = this.getAllCities.bind(this);
     this.updateState = this.updateState.bind(this);
     this.updateCity = this.updateCity.bind(this);
+    this.updateCompetitiveRadius = this.updateCompetitiveRadius.bind(this);
+    this.updateSelectedBusinesses = this.updateSelectedBusinesses.bind(this);
+  }
+
+  updateCompetitiveRadius (newValue) {
+    const {dispatch} = this.props;
+    console.log(newValue);
+    dispatch(appActions.patchCompDistance(newValue));
   }
 
   updateState (newValue) {
@@ -31,8 +44,12 @@ class Header extends React.Component{
       dispatch(appActions.patchCurrentStateSelection(null));
     }
     else{
+      dispatch(appActions.patchCurrentCitySelection(null));
       dispatch(appActions.patchCurrentStateSelection(newValue.value));
     }
+    all_cities = axios.get(sprintf('/api/all-cities/%s/', newValue.value)).then(cities => {
+      dispatch(appActions.patchCurrentCityOptions(cities.data));
+    });
   }
 
   updateCity (newValue) {
@@ -58,41 +75,49 @@ class Header extends React.Component{
     });
   };
 
-  getAllStates(input, callback) {
-    all_states = axios.get('/api/states/').then(states => {
-      callback(null, {
-        options: states.data,
-        complete: true
-      });
+  updateSelectedBusinesses(newValue) {
+    const {dispatch, viewState} = this.props;
+    getCompetitorsByRadius(viewState.currentBusinessSelection, viewState.compDistance, viewState.monthsToShow).then( competitors => {
+      console.log(competitors);
+      dispatch(appActions.patchBuisnesses(competitors.data));
     });
-  };
-
-  getAllCities(input, callback){
-    if (this.state.selectedState === null){
-      return Promise.resolve();
-    }
-    all_cities = axios.get(sprintf('/api/all-cities/%s/', this.state.selectedState)).then(cities => {
-      callback(null, {
-        options: cities.data,
-        complete: true
-      });
-    });
-  };
+  }
 
   render () {
+    const handle = (props) => {
+      const { value, dragging, index, ...restProps} = props;
+      return (
+        <Tooltip
+        prefixCls="rc-slider-tooltip"
+        overlay={value}
+        visible={dragging}
+        placement="top"
+        key={index}
+        >
+          <Handle {...restProps} />
+        </Tooltip>
+      );
+    };
+
     const {viewState} = this.props;
     return (
-      <div>
-      <div className="header-city-selector-container">
-        <div className="selector">
-          <h3 className="section-heading"> States: </h3>
-          <Select.Async loadOptions={this.getAllStates} name="selected-state" value={viewState.currentStateSelection} onChange={this.updateState} searchable />
+      <div className="outer-header">
+        <div className="header-city-selector-container">
+          <div className="selector">
+            <h3 className="section-heading"> States: </h3>
+            <Select.Async loadOptions={this.getAllStates} name="selected-state" value={viewState.currentStateSelection} onChange={this.updateState} searchable />
+          </div>
+          <div className="selector">
+            <h3 className="section-heading"> Cities: </h3>
+            <Select options={viewState.allCurrentCityOptions} clearable={false} name="selected-city" disabled={(viewState.currentStateSelection === null)} value={viewState.currentCitySelection} onChange={this.updateCity} />
+          </div>
         </div>
-        <div className="selector">
-          <h3 className="section-heading"> Cities: </h3>
-          <Select.Async loadOptions={this.getAllCities} clearable={false} name="selected-city" disabled={(viewState.currentStateSelection === null)} value={this.state.selectedCity} onChange={this.updateCity} />
+        <div className="slider-container">
+          <div className="selector">
+            <h3 className="section-heading"> Competitive Radius: </h3>
+            <Slider min={0} max={10} step={.1} value={viewState.compDistance} handle={handle} onChange={this.updateCompetitiveRadius} onAfterChange={this.updateSelectedBusinesses}/>
+          </div>
         </div>
-      </div>
       </div>
     );
   }

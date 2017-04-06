@@ -38,3 +38,12 @@ body{
 .selector {
   flex-grow: 1;
 }
+.slider-container {
+  width: 50%;
+}
+.outer-header {
+  margin: 7px;
+}
+.leaflet-popup{
+  display: none;
+}
