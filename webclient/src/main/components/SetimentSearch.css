@@ -1,0 +1,44 @@
+.setiment--outer{
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.setiment--searchBar{
+  display: flex;
+  width: 100%;
+}
+
+.setiment--searchBar > input {
+  width: 100%;
+}
+
+.setiment--report {
+  width: 100%;
+  min-height: 200px;
+  display: flex;
+  margin-top: 5px;
+}
+
+.setiment--positive {
+  width: 50%;
+}
+
+.setiment--negative {
+  width: 50%;
+  padding-left: 10px;
+  border-left: 1px solid gray;
+}
+
+.setiment--title {
+  text-align: center;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.setiment--loading {
+  justify-content: center;
+  height: 90%;
+  display: flex;
+  align-items: center;
+}

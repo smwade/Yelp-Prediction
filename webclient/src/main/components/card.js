@@ -8,7 +8,8 @@ export default class Card extends React.Component {
     const {
       title,
       id,
-      numOnLine
+      numOnLine,
+      style
     } = this.props;
     var numString;
     if (numOnLine){
@@ -28,7 +29,7 @@ export default class Card extends React.Component {
         <div className='card--title'>
           {title}
         </div>
-        <div className='card--inner' id={id}>
+        <div className='card--inner' id={id} style={style}>
           {this.props.children}
         </div>
       </div>

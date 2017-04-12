@@ -17,3 +17,9 @@ export const patchCompDistance = createAction(PATCH_COMP_DISTANCE);
 
 export const PATCH_BUSINESSES = 'PATCH_BUSINESSES';
 export const patchBuisnesses = createAction(PATCH_BUSINESSES);
+
+export const PATCH_SETIMENT = 'PATCH_SETIMENT';
+export const patchSetiment = createAction(PATCH_SETIMENT);
+
+export const PATCH_REFINED_REVIEWS = 'PATCH_REFINED_REVIEWS';
+export const patchRefinedReviews = createAction(PATCH_REFINED_REVIEWS);

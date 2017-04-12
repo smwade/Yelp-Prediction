@@ -1,84 +1,97 @@
 from pymongo import MongoClient
+import matplotlib.pyplot as plt
+import math
 import numpy as np
-from sklearn.cluster import KMeans
 import gpxpy.geo
 from tqdm import tqdm
 from collections import defaultdict
+from sklearn.cluster import KMeans
+import json
+from sklearn.cluster import KMeans
+
 client = MongoClient()
 db = client.yelp
 
-import matplotlib.pyplot as plt
 from pathos.multiprocessing import ProcessingPool as Pool
 
-def get_radius_for_city(city, tol=1):
-    def get_all_reviews_by_user_for_city(city):
-        bizes = list(db.businesses.find({"city": city}, { "business_id": 1, "latitude": 1, "longitude": 1, "categories": 1}))
+def get_all_reviews_by_user_for_city(city):
+    """A function which queries for all the reviews associated to all the buisnesses in a city
+    returns a dict (biz_id : review_locations)"""
+    bizes = list(db.businesses.find({"city": city}, { "business_id": 1, "latitude": 1, "longitude": 1, "categories": 1}))
+    user_reviews = defaultdict(list)
+    for biz in tqdm(bizes):
+        biz_id = biz['business_id']
+        rel_review = db.reviews.find({"business_id": biz_id})
+        for review in list(rel_review):
+            user_reviews[review['user_id']].append((biz["latitude"], biz["longitude"]))
+    return user_reviews
 
-        biz_ids = [biz['business_id'] for biz in bizes]
-        all_reviews = list(db.reviews.find({"business_id": {"$in": biz_ids}}))
 
-        user_reviews = defaultdict(list)
+def get_average_lat_and_long(set_lat_by_long):
+    """We get some wierd outliers from the 'set_lat_by_long' we'll need to take care of these some how
+    returns: the average latitude and longitude
+    NOTE: this is simply the average of the latitude and longitude values (not based on geodicics)"""
+    set_lat_by_long = np.asarray(set_lat_by_long).copy()
+    return np.average(set_lat_by_long, axis=0)
 
-        def review_append(review):
-          rel_biz = filter(lambda biz: biz['business_id'] == review['business_id'], bizes)[0]
-          return review['user_id'], (rel_biz["latitude"], rel_biz["longitude"])
+def get_max_distacne_from_mid(set_lat_by_long):
+    """Because of the outliers (these are caused by a missing sign) get_average_lat_and_long returns a point
+    that is very far from the actual center"""
+    set_lat_by_long = np.asarray(set_lat_by_long)
+    mid = get_average_lat_and_long(set_lat_by_long)
+    return np.max([gpxpy.geo.haversine_distance(mid[0], mid[1], lat, lon)/1609.34 for lat, lon in set_lat_by_long])
 
-        p = Pool(8)
-        result_map = p.map(review_append, all_reviews)
+def get_all_centers_as_array(reviews_dict):
+    x_centers_list = []
+    y_centers_list = []
+    associated_id = []
+    for uid, user_review in reviews_dict.iteritems():
+        if len(user_review) == 1:
+            continue #We don't care about single reviewers! They give us no information.
+        x, y = get_average_lat_and_long(user_review)
+        x_centers_list.append(x)
+        y_centers_list.append(y)
+        associated_id.append(uid)
+    return np.array([x_centers_list, y_centers_list]).T, associated_id
 
-        for user, loc in result_map:
-          user_reviews[user].append(loc)
+from sklearn.covariance import EllipticEnvelope
 
-        """for review in tqdm(all_reviews):
-            rel_biz = filter(lambda biz: biz['business_id'] == review['business_id'], bizes)[0]
-            user_reviews[review['user_id']].append((rel_biz["latitude"], rel_biz["longitude"]))"""
-        return user_reviews
+def clean_reviewer_average_radius_with_EllipticEnvelope(reviews):
+    good_points = {}
+    classifier = EllipticEnvelope(contamination=0.005)
+    centers, user_ids = get_all_centers_as_array(reviews)
+    classifier.fit(centers)
+    inlier_indexes = np.where(classifier.predict(centers) != -1)
+    user_ids = np.array(user_ids)[inlier_indexes]
+    for i, user_id in enumerate(user_ids):
+        good_points[user_id] = reviews[user_id]
+    return good_points
 
-    def get_average_lat_and_long(set_lat_by_long):
-        set_lat_by_long = np.asarray(set_lat_by_long).copy()
-        return np.average(set_lat_by_long, axis=0)
+def get_radi_from_review_centers_dict(review_centers_dict, tol=1):
+    review_center_radi = []
+    review_center_weights = []
+    for val in review_centers_dict.values():
+        dis_from_mid = get_max_distacne_from_mid(val)
+        review_center_radi.append(dis_from_mid)
+        review_center_weights.append(len(val))
+    return np.dot(np.array(review_center_weights).T, np.array(review_center_radi))/np.sum(review_center_weights)
 
-    def get_max_distacne_from_mid(set_lat_by_long):
-        set_lat_by_long = np.asarray(set_lat_by_long)
-        mid = get_average_lat_and_long(set_lat_by_long)
-        return np.max([gpxpy.geo.haversine_distance(mid[0], mid[1], lat, lon)/1609.34 for lat, lon in set_lat_by_long])
 
-    def get_clusters(data, n_clusters=2):
-        kmeans = KMeans(n_clusters=2).fit(data)
-        centers = kmeans.cluster_centers_
-        to_return = [[] for i in range(len(centers))]
-        for x in data:
-            dist = np.linalg.norm(centers - x, 1, axis=1)
-            index = np.argmin(dist)
-            to_return[index].append(x)
-        return sorted([np.vstack(i) for i in to_return], key=lambda x: len(x))[::-1]
+cities = [city for city in db.businesses.find().distinct("city")]
+henderson_reviews = get_all_reviews_by_user_for_city("Henderson")
 
-    city_reviews = get_all_reviews_by_user_for_city(city)
-    city_radi = []
-    review_weights = [] # the more reviews that a user has given the more confident we are that they are part of the competitive region
-    for i, val in enumerate(city_reviews.values()):
-        if len(val) > 1:
-            dis_from_mid = get_max_distacne_from_mid(val)
-            k = 2
-            while dis_from_mid > 100:
-                val = get_clusters(val, n_clusters=k)[0]
-                k += 1
-                dis_from_mid = get_max_distacne_from_mid(val)
-            city_radi.append(dis_from_mid)
-            review_weights.append(len(val))
+print get_radius_from_review_centers_dict(clean_reviewer_average_radius_with_EllipticEnvelope(henderson_reviews))
 
-    final = np.dot(np.array(review_weights).T, np.array(city_radi))/np.sum(review_weights)
-    db.cityDistanceMetric.insert_one({"city" : city, "radius" : final})
-    return city, final
+#db.cityDistanceMetric.insert_one({"city" : city, "radius" : final})
+#return city, final
 
-cities = [city for city in db.businesses.find().distinct("city") if city not in db.cityDistanceMetric.find().distinct("city")]
 print cities
 print len(cities)
 #print dview.map_sync(get_radius_for_city, cities)
 
 #print get_radius_for_city("Henderson")
-for city in cities:
-    get_radius_for_city(city)
+#for city in cities:
+    #get_radius_for_city(city)
 p.close()
 p.terminate()
 p.join()

@@ -28,6 +28,7 @@
 .card--inner{
   height: inherit;
   min-height: 100px;
+  overflow: auto;
   padding: 5px 10px;
   flex-grow: 1;
   display: flex;

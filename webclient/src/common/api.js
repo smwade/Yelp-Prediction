@@ -21,3 +21,10 @@ export function getStarDistrobution(biz_id) {
   return axios.get(sprintf('/api/business/%s/star-distrobution/', biz_id));
 }
 
+export function getSetimentReport(biz_id, word) {
+  return axios.get(sprintf('/api/business/%s/setiment-report/?word=%s', biz_id, word));
+}
+
+export function getRefinedRatings(biz_id, word) {
+  return axios.get(sprintf('/api/business/%s/refined-ratings/?word=%s', biz_id, word));
+}

@@ -12,7 +12,6 @@ require('../../css/rc-slider/index.css');
 require('../../css/rc-tooltip/bootstrap.css');
 
 var all_states;
-var all_cities;
 
 
 function getAllCitiesForState(state) {
@@ -22,14 +21,12 @@ function getAllCitiesForState(state) {
 class Header extends React.Component{
   constructor(props) {
     super(props);
-    this.state = {
-      disabled: false,
-      selectedState: null,
-    };
     this.updateState = this.updateState.bind(this);
     this.updateCity = this.updateCity.bind(this);
     this.updateCompetitiveRadius = this.updateCompetitiveRadius.bind(this);
     this.updateSelectedBusinesses = this.updateSelectedBusinesses.bind(this);
+    this.updateBusiness = this.updateBusiness.bind(this);
+    this.state = {businessOptions: null };
   }
 
   updateCompetitiveRadius (newValue) {
@@ -44,21 +41,38 @@ class Header extends React.Component{
       dispatch(appActions.patchCurrentStateSelection(null));
     }
     else{
+      dispatch(appActions.patchBusinessSelection(null));
       dispatch(appActions.patchCurrentCitySelection(null));
       dispatch(appActions.patchCurrentStateSelection(newValue.value));
     }
-    all_cities = axios.get(sprintf('/api/all-cities/%s/', newValue.value)).then(cities => {
+    axios.get(sprintf('/api/all-cities/%s/', newValue.value)).then(cities => {
       dispatch(appActions.patchCurrentCityOptions(cities.data));
     });
   }
 
   updateCity (newValue) {
     const {dispatch} = this.props;
+    var that = this;
     if (newValue === null){
       dispatch(appActions.patchCurrentCitySelection(null));
     }
     else{
+      dispatch(appActions.patchBusinessSelection(null));
       dispatch(appActions.patchCurrentCitySelection(newValue.value));
+    }
+    axios.get(sprintf('/api/all-businesses/?city=%s', newValue.value)).then(business => {
+      console.log(business);
+      that.setState({businessOptions : business.data});
+    });
+  }
+
+  updateBusiness(newValue) {
+    const {dispatch} = this.props;
+    if (newValue === null){
+      dispatch(appActions.patchBusinessSelection(null));
+    }
+    else{
+      dispatch(appActions.patchBusinessSelection(newValue.value));
     }
   }
 
@@ -116,6 +130,10 @@ class Header extends React.Component{
           <div className="selector">
             <h3 className="section-heading"> Competitive Radius: </h3>
             <Slider min={0} max={10} step={.1} value={viewState.compDistance} handle={handle} onChange={this.updateCompetitiveRadius} onAfterChange={this.updateSelectedBusinesses}/>
+          </div>
+          <div className="selector">
+            <h3 className="section-heading"> Business: </h3>
+            <Select options={this.state.businessOptions} clearable={false} name="selected-buinesses" disabled={(viewState.currentCitySelection === null)} value={viewState.currentBusinessSelection} onChange={this.updateBusiness} />
           </div>
         </div>
       </div>

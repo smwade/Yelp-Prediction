@@ -24,8 +24,11 @@ urlpatterns = [
     url(r'^api/business/(?P<business_id>[\w-]+)/percent-above-average/$', businesses.get_ratings_above_average),
     url(r'^api/business/(?P<business_id>[\w-]+)/star-distrobution/$', businesses.get_distrobution),
     url(r'^api/business/(?P<business_id>[\w-]+)/get-competitors-by-radius/(?P<radius>([0-9]*[.])?[0-9]+)/$', businesses.get_competitors_and_stars_by_radius),
+    url(r'^api/business/(?P<business_id>[\w-]+)/setiment-report/$', businesses.get_setiment_extremes),
+    url(r'^api/business/(?P<business_id>[\w-]+)/refined-ratings/$', businesses.get_refined_ratings),
     url(r'^api/states/', locations.get_all_states),
     url(r'^api/all-cities/(?P<state_code>[\w-]+)/$', locations.get_all_cities),
+    url(r'^api/all-businesses/$', locations.get_all_businesses),
     url(r'^admin/', admin.site.urls),
     url(r'^$', index),
 ]

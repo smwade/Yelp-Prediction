@@ -1,0 +1,15 @@
+numpy
+sumy
+textblob
+gensim
+pyLDAvis
+nltk
+us
+pymongo
+pandas
+scipy
+sklearn
+jupyter
+gpxpy
+django-webpack-loader
+django

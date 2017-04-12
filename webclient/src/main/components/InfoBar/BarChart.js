@@ -2,6 +2,7 @@ import * as d3 from "d3";
 import {COLORS} from "../../../common/constants.js";
 
 var DELAY = 300;
+var DURATION = 1500;
 
 // Mike Bostock "margin conventions"
 function drawBarGraph( elementId, data ) {
@@ -93,7 +94,6 @@ function drawBarGraph( elementId, data ) {
         .duration(300)
       .attr("y", y(0))
       .attr("height", height - y(0))
-      .style('fill-opacity', 1e-6)
       .remove();
 
     // data that needs DOM = enter() (a set/selection, not an event!)
@@ -110,6 +110,16 @@ function drawBarGraph( elementId, data ) {
       .attr("height", function(d) { return height - y(d.frequency); }); // flip the height, because y's domain is bottom up, but SVG renders top down
 
   }
+
+  function animateOff(){
+    var all_rects = svg.selectAll("rect");
+    all_rects.transition()
+             .duration( DURATION/3 )
+             .style('opacity', 0)
+             .remove();
+  };
+
+  return {animateOff: animateOff, reDraw: replay};
 }
 
 export default drawBarGraph;
